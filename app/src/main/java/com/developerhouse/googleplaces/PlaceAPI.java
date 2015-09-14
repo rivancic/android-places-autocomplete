@@ -19,23 +19,19 @@ import java.util.ArrayList;
  */
 public class PlaceAPI {
 
-    private final String TAG = PlaceAPI.class.getSimpleName();
     private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
     private static final String API_KEY = "AIzaSyCSvftaXQfxoM3BJdqCqlTSh4yMGHvZzLo";
-
-    //public ArrayList<Address> getListAddress() {
-    //    return listAddress;
-    //}
-
-    //ArrayList<Address> listAddress;
+    private final String TAG = PlaceAPI.class.getSimpleName();
 
     /**
      * Providing Street, Postal, Code and Country
+     *
      * @param street
      * @param postalCode
      * @param country
+     *
      * @return Want to get City and Province
      */
     public ArrayList<Address> autocomplete(String street, String postalCode, String country) {
@@ -44,16 +40,13 @@ public class PlaceAPI {
     }
 
     public ArrayList<Address> autocomplete(String input) {
-        //ArrayList<String> resultList = null;
-        ArrayList<Address> listAddress = new ArrayList<>();
 
+        ArrayList<Address> listAddress = new ArrayList<>();
         HttpURLConnection conn = null;
         StringBuilder jsonResults = new StringBuilder();
-
         try {
             StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
             sb.append("?key=" + API_KEY);
-            //sb.append("&types=(regions)");
             sb.append("&types=address");
             sb.append("&input=" + URLEncoder.encode(input, "utf8"));
             URL url = new URL(sb.toString());
@@ -76,26 +69,19 @@ public class PlaceAPI {
             }
         }
         try {
-             Log.d(TAG, jsonResults.toString());
+            Log.d(TAG, jsonResults.toString());
             // Create a JSON object hierarchy from the results
             JSONObject jsonObj = new JSONObject(jsonResults.toString());
             JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
-
-            // Extract the Place descriptions from the results
-            //resultList = new ArrayList<>(predsJsonArray.length());
-
             for (int i = 0; i < predsJsonArray.length(); i++) {
                 Address add = new Address();
                 add.placesId = predsJsonArray.getJSONObject(i).getString("place_id");
                 add.addressStreet = predsJsonArray.getJSONObject(i).getString("description");
                 listAddress.add(add);
-                //resultList.add(predsJsonArray.getJSONObject(i).getString("description"));
             }
         } catch (JSONException e) {
             Log.e(TAG, "Cannot process JSON results", e);
         }
-
         return listAddress;
     }
-
 }
