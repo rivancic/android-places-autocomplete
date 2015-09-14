@@ -14,43 +14,43 @@ import java.util.ArrayList;
 
 class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
 
+    private ArrayList<String> resultList;
+    private Context mContext;
+    private int mResource;
+    private PlaceAPI mPlaceAPI = new PlaceAPI();
+    public PlacesAutoCompleteAdapter(Context context, int resource) {
+
+        super(context, resource);
+        mContext = context;
+        mResource = resource;
+    }
+
     public ArrayList<String> loadSuggestions(String location) {
 
         return mPlaceAPI.autocomplete(location);
     }
 
     public ArrayList<String> getResultList() {
+
         return resultList;
     }
 
     public void setResultList(ArrayList<String> resultList) {
+
         this.resultList = resultList;
     }
-
-    private ArrayList<String> resultList;
-    private Context mContext;
-    private int mResource;
-    private PlaceAPI mPlaceAPI = new PlaceAPI();
 
     public PlaceAPI getmPlaceAPI() {
 
         return mPlaceAPI;
     }
 
-    public PlacesAutoCompleteAdapter(Context context, int resource) {
-        super(context, resource);
-
-        mContext = context;
-        mResource = resource;
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view;
 
+        View view;
         //if (convertView == null) {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
         if (position != (resultList.size() - 1))
             view = inflater.inflate(R.layout.autocomplete_item, null);
         else
@@ -59,7 +59,6 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
         //else {
         //    view = convertView;
         //}
-
         if (position != (resultList.size() - 1)) {
             TextView autocompleteTextView = (TextView) view.findViewById(R.id.autocompleteText);
             //  System.out.println(resultList.get(position).addressStreet);
@@ -68,7 +67,6 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
             ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
             // not sure what to do <img class="emoji" draggable="false" alt="😀" src="http://s.w.org/images/core/emoji/72x72/1f600.png">
         }
-
         return view;
     }
 
@@ -80,14 +78,18 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
 
     @Override
     public String getItem(int position) {
+
         return resultList.get(position);
     }
 
     @Override
     public Filter getFilter() {
+
         Filter filter = new Filter() {
+
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
+
                 return null;
             }
 
@@ -96,7 +98,6 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
 
             }
         };
-
         return filter;
     }
 

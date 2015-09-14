@@ -2,25 +2,25 @@
 <items version="2" >
 
     <item
-        jar="/home/renato/Desktop/Google Places/ImportedProject/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/libs/internal_impl-22.0.0.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="b5b92f469d515a13d778900f6d50c03d12f35504">
-        <dex dex="/home/renato/Desktop/Google Places/ImportedProject/app/build/intermediates/pre-dexed/debug/internal_impl-22.0.0-53857d3b9a685511bfadd5d5dbb42efe305f7379.jar" />
-    </item>
-    <item
-        jar="/home/renato/Desktop/Google Places/ImportedProject/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/classes.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="4e86306289ace4aa0cfec44a05ed2b410d36989d">
-        <dex dex="/home/renato/Desktop/Google Places/ImportedProject/app/build/intermediates/pre-dexed/debug/classes-96ea40c76708c09a49598d383f1a48762b9615f4.jar" />
-    </item>
-    <item
-        jar="/home/renato/Android/Sdk/extras/android/m2repository/com/android/support/support-annotations/22.0.0/support-annotations-22.0.0.jar"
+        jar="/Users/renatoivancic/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/22.0.0/support-annotations-22.0.0.jar"
         jumboMode="false"
         revision="22.0.1"
         sha1="685d0b2c590447e85284ed84712cb363ba04eff8">
-        <dex dex="/home/renato/Desktop/Google Places/ImportedProject/app/build/intermediates/pre-dexed/debug/support-annotations-22.0.0-2264ae3bcaa1105721ddbfb0ebf5897cdfaaaf4b.jar" />
+        <dex dex="/Users/renatoivancic/AndroidStudioProjects/Places/android-places-autocomplete/app/build/intermediates/pre-dexed/debug/support-annotations-22.0.0-11d83b6f43f8c69a15755a206c14db772a6271c0.jar" />
+    </item>
+    <item
+        jar="/Users/renatoivancic/AndroidStudioProjects/Places/android-places-autocomplete/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/libs/internal_impl-22.0.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="b5b92f469d515a13d778900f6d50c03d12f35504">
+        <dex dex="/Users/renatoivancic/AndroidStudioProjects/Places/android-places-autocomplete/app/build/intermediates/pre-dexed/debug/internal_impl-22.0.0-42c4e545ce6535ee7c5961962d294b319cfab8e2.jar" />
+    </item>
+    <item
+        jar="/Users/renatoivancic/AndroidStudioProjects/Places/android-places-autocomplete/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="4e86306289ace4aa0cfec44a05ed2b410d36989d">
+        <dex dex="/Users/renatoivancic/AndroidStudioProjects/Places/android-places-autocomplete/app/build/intermediates/pre-dexed/debug/classes-7b4e86d9f3a70aa2f5abb9cf0480366a9578552c.jar" />
     </item>
 
 </items>

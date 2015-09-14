@@ -18,19 +18,52 @@ import java.util.ArrayList;
 @SuppressWarnings("Annotator")
 public class MainActivity extends Activity {
 
+    private static String TAG = MainActivity.class.getSimpleName();
     EditText cityEt;
     EditText countryEt;
     EditText postalCodeEt;
     AutoCompleteTextView autocompleteView;
-    private static String TAG = MainActivity.class.getSimpleName();
-    private PlacesAutoCompleteAdapter autoCompleteAdapter;
-    private PlacesTextWatcher placesTextWatcher;
     /**
      * UI thread handling autocomplete updates.
      */
     HandlerThread mHandlerThread;
     Handler uiThreadHandler;
     Handler backgroundThreadHandler;
+    private static PlacesAutoCompleteAdapter autoCompleteAdapter;
+    private PlacesTextWatcher placesTextWatcher;
+
+    public MainActivity() {
+        // Handler running on UI thread
+        if (uiThreadHandler == null) {
+            uiThreadHandler = new AutocompleteHandler();
+        }
+        // Required empty public constructor
+        if (backgroundThreadHandler == null) {
+            // Initialize and start the HandlerThread
+            // which is basically a Thread with a Looper
+            // attached (hence a MessageQueue)
+            mHandlerThread = new HandlerThread(TAG, android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            mHandlerThread.start();
+            // Initialize the Handler
+            backgroundThreadHandler = new Handler(mHandlerThread.getLooper());
+        }
+    }
+
+    public static class AutocompleteHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+
+            if (msg.what == 1) {
+                ArrayList<String> results = autoCompleteAdapter.getResultList();
+                if (results != null && results.size() > 0) {
+                    autoCompleteAdapter.notifyDataSetChanged();
+                } else {
+                    autoCompleteAdapter.notifyDataSetInvalidated();
+                }
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +82,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-
                 // Get data associated with the specified position
                 // in the list (AdapterView)
                 backgroundThreadHandler.post(new Runnable() {
@@ -60,62 +92,17 @@ public class MainActivity extends Activity {
                         PlacesDetailAPI placeDetail = new PlacesDetailAPI();
                         final Address address = placeDetail.autocomplete(autoCompleteAdapter.getPlaceIdAt(position));
                         uiThreadHandler.post(new Runnable() {
+
                             @Override
                             public void run() {
+
                                 displayAddress(address);
                             }
                         });
                     }
                 });
-
             }
         });
-
-    }
-
-    class PlacesTextWatcher implements TextWatcher {
-
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            final String value = charSequence.toString();
-
-            // Remove all callbacks and messages
-            backgroundThreadHandler.removeCallbacksAndMessages(null);
-
-            // Now add a new one
-            backgroundThreadHandler.postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    // Background thread
-
-                    Log.d(TAG, "Suggestion Called");
-                    //System.out.println(autoCompleteAdapter.mPlaceAPI.autocomplete(value)+"EE");
-                    autoCompleteAdapter.setResultList(autoCompleteAdapter.loadSuggestions(value));
-
-                    // Footer
-                    if (autoCompleteAdapter.hasResults()) {
-
-                        autoCompleteAdapter.addFooter("footer");
-                    }
-
-                    // Post to Main Thread
-                    uiThreadHandler.sendEmptyMessage(1);
-                }
-            }, 1000);
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-
-        }
-
     }
 
     private void displayAddress(Address address) {
@@ -132,58 +119,50 @@ public class MainActivity extends Activity {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
 
+        super.onDestroy();
         // Get rid of our Place API Handlers
         if (uiThreadHandler != null) {
-
             uiThreadHandler.removeCallbacksAndMessages(null);
             mHandlerThread.quit();
         }
-
     }
 
-    public MainActivity() {
+    class PlacesTextWatcher implements TextWatcher {
 
-        // Handler running on UI thread
-        if (uiThreadHandler == null) {
-            uiThreadHandler = new Handler() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            final String value = charSequence.toString();
+            // Remove all callbacks and messages
+            backgroundThreadHandler.removeCallbacksAndMessages(null);
+            // Now add a new one
+            backgroundThreadHandler.postDelayed(new Runnable() {
 
                 @Override
-                public void handleMessage(Message msg) {
-
-                    if (msg.what == 1) {
-
-                        ArrayList<String> results = autoCompleteAdapter.getResultList();
-
-                        if (results != null && results.size() > 0) {
-
-                            autoCompleteAdapter.notifyDataSetChanged();
-                        } else {
-
-                            autoCompleteAdapter.notifyDataSetInvalidated();
-                        }
-
+                public void run() {
+                    // Background thread
+                    Log.d(TAG, "Suggestion Called");
+                    //System.out.println(autoCompleteAdapter.mPlaceAPI.autocomplete(value)+"EE");
+                    autoCompleteAdapter.setResultList(autoCompleteAdapter.loadSuggestions(value));
+                    // Footer
+                    if (autoCompleteAdapter.hasResults()) {
+                        autoCompleteAdapter.addFooter("footer");
                     }
-
+                    // Post to Main Thread
+                    uiThreadHandler.sendEmptyMessage(1);
                 }
-
-            };
+            }, 1000);
         }
 
-        // Required empty public constructor
-        if (backgroundThreadHandler == null) {
+        @Override
+        public void afterTextChanged(Editable editable) {
 
-            // Initialize and start the HandlerThread
-            // which is basically a Thread with a Looper
-            // attached (hence a MessageQueue)
-            mHandlerThread = new HandlerThread(TAG, android.os.Process.THREAD_PRIORITY_BACKGROUND);
-            mHandlerThread.start();
-
-            // Initialize the Handler
-            backgroundThreadHandler = new Handler(mHandlerThread.getLooper());
         }
-
     }
-
 }
