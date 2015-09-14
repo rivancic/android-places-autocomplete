@@ -66,6 +66,8 @@ public class PlacesDetailAPI {
                         finalAddress.country = addJsonArray.getJSONObject(i).getString("long_name");
                     } else if (typesArray.getString(j).equals("postal_code")) {
                         finalAddress.postalCode = addJsonArray.getJSONObject(i).getString("long_name");
+                    } else if (typesArray.getString(j).equals("administrative_area_level_1")) {
+                        finalAddress.province = addJsonArray.getJSONObject(i).getString("long_name");
                     }
                 }
                 finalAddress.placesId = input;

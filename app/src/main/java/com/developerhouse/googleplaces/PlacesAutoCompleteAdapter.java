@@ -16,19 +16,20 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
 
     private ArrayList<String> resultList;
     private Context mContext;
-    private int mResource;
+    //private int mResource;
     private PlaceAPI mPlaceAPI = new PlaceAPI();
     public PlacesAutoCompleteAdapter(Context context, int resource) {
 
         super(context, resource);
         mContext = context;
-        mResource = resource;
+      //  mResource = resource;
     }
 
-    public ArrayList<String> loadSuggestions(String location) {
+    /*public ArrayList<String> loadSuggestions(String location) {
 
-        return mPlaceAPI.autocomplete(location);
-    }
+        //return mPlaceAPI.autocomplete(location);
+
+    }*/
 
     public ArrayList<String> getResultList() {
 
@@ -113,6 +114,7 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterab
 
     public String getPlaceIdAt(int position) {
 
-        return mPlaceAPI.getListAddress().get(position).placesId;
+       // return mPlaceAPI.getListAddress().get(position).placesId;
+        return "bla";
     }
 }

@@ -10,4 +10,5 @@ public class Address {
     String listAddress;
     String country;
     String postalCode;
+    String province;
 }

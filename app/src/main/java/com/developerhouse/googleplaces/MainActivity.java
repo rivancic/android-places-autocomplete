@@ -4,39 +4,45 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("Annotator")
 public class MainActivity extends Activity {
 
     private static String TAG = MainActivity.class.getSimpleName();
-    EditText cityEt;
-    EditText countryEt;
+    private static PlacesAutoCompleteAdapter autoCompleteAdapter;
+    EditText streetEt;
     EditText postalCodeEt;
-    AutoCompleteTextView autocompleteView;
+    EditText countryEt;
+    TextView cityEt;
+    TextView provinceEt;
     /**
      * UI thread handling autocomplete updates.
      */
     HandlerThread mHandlerThread;
-    Handler uiThreadHandler;
+    /**
+     * Ui thread handler that is displaying the results in ui.
+     */
+    //Handler uiThreadHandler;
+    /**
+     * Thread handler for making google api requests in the background.
+     * It is set in the TextWatcher.
+     */
     Handler backgroundThreadHandler;
-    private static PlacesAutoCompleteAdapter autoCompleteAdapter;
+    private PlaceAPI mPlaceAPI = new PlaceAPI();
     private PlacesTextWatcher placesTextWatcher;
 
     public MainActivity() {
         // Handler running on UI thread
-        if (uiThreadHandler == null) {
+        /*if (uiThreadHandler == null) {
             uiThreadHandler = new AutocompleteHandler();
-        }
+        }*/
         // Required empty public constructor
         if (backgroundThreadHandler == null) {
             // Initialize and start the HandlerThread
@@ -49,36 +55,20 @@ public class MainActivity extends Activity {
         }
     }
 
-    public static class AutocompleteHandler extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-
-            if (msg.what == 1) {
-                ArrayList<String> results = autoCompleteAdapter.getResultList();
-                if (results != null && results.size() > 0) {
-                    autoCompleteAdapter.notifyDataSetChanged();
-                } else {
-                    autoCompleteAdapter.notifyDataSetInvalidated();
-                }
-            }
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cityEt = (EditText) findViewById(R.id.City);
-        countryEt = (EditText) findViewById(R.id.Country);
+        streetEt = (EditText) findViewById(R.id.street);
         postalCodeEt = (EditText) findViewById(R.id.PostalCode);
-        autocompleteView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
-        autocompleteView.setAdapter(new PlacesAutoCompleteAdapter(this, R.layout.autocomplete_item));
-        autoCompleteAdapter = (PlacesAutoCompleteAdapter) autocompleteView.getAdapter();
+        countryEt = (EditText) findViewById(R.id.Country);
+        cityEt = (TextView) findViewById(R.id.city);
+        provinceEt = (TextView) findViewById(R.id.province);
         placesTextWatcher = new PlacesTextWatcher();
-        autocompleteView.addTextChangedListener(placesTextWatcher);
-        autocompleteView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        countryEt.addTextChangedListener(placesTextWatcher);
+        //autocompleteView.addTextChangedListener(placesTextWatcher);
+        /*autocompleteView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
@@ -102,19 +92,21 @@ public class MainActivity extends Activity {
                     }
                 });
             }
-        });
+        });*/
     }
 
     private void displayAddress(Address address) {
 
         backgroundThreadHandler.removeCallbacksAndMessages(null);
-        autocompleteView.removeTextChangedListener(placesTextWatcher);
+        countryEt.removeTextChangedListener(placesTextWatcher);
         // TODO will be ok when the routAndStreetNumberWillBeParsed
-        autocompleteView.setText(address.routeAndStreetNumber);
+        //autocompleteView.setText(address.routeAndStreetNumber);
         cityEt.setText(address.city);
-        countryEt.setText(address.country);
-        postalCodeEt.setText(address.postalCode);
-        autocompleteView.addTextChangedListener(placesTextWatcher);
+        provinceEt.setText(address.province);
+        //provinceEt.setText(address.);
+        // countryEt.setText(address.country);
+        //postalCodeEt.setText(address.postalCode);
+        countryEt.addTextChangedListener(placesTextWatcher);
     }
 
     @Override
@@ -122,11 +114,27 @@ public class MainActivity extends Activity {
 
         super.onDestroy();
         // Get rid of our Place API Handlers
-        if (uiThreadHandler != null) {
-            uiThreadHandler.removeCallbacksAndMessages(null);
-            mHandlerThread.quit();
-        }
+        //if (uiThreadHandler != null) {
+        //    uiThreadHandler.removeCallbacksAndMessages(null);
+        //    mHandlerThread.quit();
+       // }
     }
+
+    /*public static class AutocompleteHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+
+            if (msg.what == 1) {
+                ArrayList<String> results = autoCompleteAdapter.getResultList();
+                if (results != null && results.size() > 0) {
+                    autoCompleteAdapter.notifyDataSetChanged();
+                } else {
+                    autoCompleteAdapter.notifyDataSetInvalidated();
+                }
+            }
+        }
+    }*/
 
     class PlacesTextWatcher implements TextWatcher {
 
@@ -139,25 +147,45 @@ public class MainActivity extends Activity {
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
             final String value = charSequence.toString();
+
+
             // Remove all callbacks and messages
             backgroundThreadHandler.removeCallbacksAndMessages(null);
-            // Now add a new one
-            backgroundThreadHandler.postDelayed(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Background thread
-                    Log.d(TAG, "Suggestion Called");
-                    //System.out.println(autoCompleteAdapter.mPlaceAPI.autocomplete(value)+"EE");
-                    autoCompleteAdapter.setResultList(autoCompleteAdapter.loadSuggestions(value));
-                    // Footer
-                    if (autoCompleteAdapter.hasResults()) {
-                        autoCompleteAdapter.addFooter("footer");
+            if (streetEt.getText().toString().length() > 0 && postalCodeEt.getText().toString()
+                    .length() > 0 && countryEt.getText().toString().length() > 0) {
+                // Now add a new one
+                backgroundThreadHandler.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // Background thread
+                        Log.d(TAG, "Suggestion Called");
+                        //System.out.println(autoCompleteAdapter.mPlaceAPI.autocomplete(value)+"EE");
+                        //public ArrayList<String> loadSuggestions(String location){
+                        final List<Address> listAddresses = mPlaceAPI.autocomplete(streetEt.getText()
+                                        .toString(),
+                                postalCodeEt.getText().toString(), countryEt.getText().toString());
+                        if (listAddresses != null && listAddresses.size() > 0) {
+                            PlacesDetailAPI placeDetail = new PlacesDetailAPI();
+                            final Address address = placeDetail.autocomplete(listAddresses.get(0).placesId);
+                            runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    displayAddress(address);
+                                }
+                            });
+                        }
+                        //}
+                        //autoCompleteAdapter.setResultList(autoCompleteAdapter.loadSuggestions
+                        //      (value));
+                        // Post to Main Thread
+                        //uiThreadHandler.sendEmptyMessage(1);
                     }
-                    // Post to Main Thread
-                    uiThreadHandler.sendEmptyMessage(1);
-                }
-            }, 1000);
+                }, 1000);
+            }
         }
 
         @Override
