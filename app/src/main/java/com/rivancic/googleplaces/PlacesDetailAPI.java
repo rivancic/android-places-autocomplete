@@ -1,4 +1,4 @@
-package com.developerhouse.googleplaces;
+package com.rivancic.googleplaces;
 
 import android.util.Log;
 

@@ -1,4 +1,4 @@
-package com.developerhouse.googleplaces;
+package com.rivancic.googleplaces;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,11 +7,18 @@ import android.os.HandlerThread;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.List;
 
+/**
+ * Street, postal code and country should be provided into UI.
+ * Trough the GooglePlace API the matching results are returned.
+ * If there is exactly one result then the city and province of that result are displayed.
+ */
 public class MainActivity extends Activity {
 
     private static String TAG = MainActivity.class.getSimpleName();
@@ -20,6 +27,7 @@ public class MainActivity extends Activity {
     EditText countryEt;
     TextView cityEt;
     TextView provinceEt;
+    ProgressBar progressBar;
     /**
      * UI thread handling autocomplete updates.
      */
@@ -29,7 +37,7 @@ public class MainActivity extends Activity {
      * It is set in the TextWatcher.
      */
     Handler backgroundThreadHandler;
-    private PlaceAPI mPlaceAPI = new PlaceAPI();
+    private PlacesAutocompleteAPI mPlaceAPI = new PlacesAutocompleteAPI();
     private PlacesTextWatcher placesTextWatcher;
 
     public MainActivity() {
@@ -54,17 +62,22 @@ public class MainActivity extends Activity {
         countryEt = (EditText) findViewById(R.id.Country);
         cityEt = (TextView) findViewById(R.id.city);
         provinceEt = (TextView) findViewById(R.id.province);
+        progressBar = (ProgressBar) findViewById(R.id.login_progress);
         placesTextWatcher = new PlacesTextWatcher();
-        countryEt.addTextChangedListener(placesTextWatcher);
+        streetEt.addTextChangedListener(placesTextWatcher);
+        postalCodeEt.addTextChangedListener(placesTextWatcher);
     }
 
     private void displayAddress(Address address) {
 
         backgroundThreadHandler.removeCallbacksAndMessages(null);
-        countryEt.removeTextChangedListener(placesTextWatcher);
+        postalCodeEt.removeTextChangedListener(placesTextWatcher);
+        streetEt.removeTextChangedListener(placesTextWatcher);
         cityEt.setText(address.city);
         provinceEt.setText(address.province);
-        countryEt.addTextChangedListener(placesTextWatcher);
+        postalCodeEt.addTextChangedListener(placesTextWatcher);
+        streetEt.addTextChangedListener(placesTextWatcher);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -73,6 +86,16 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    private void resetUi() {
+
+        cityEt.setText("");
+        provinceEt.setText("");
+        progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    /**
+     * Text watcher for input fields.
+     */
     class PlacesTextWatcher implements TextWatcher {
 
         @Override
@@ -83,7 +106,6 @@ public class MainActivity extends Activity {
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-            final String value = charSequence.toString();
             // Remove all callbacks and messages
             backgroundThreadHandler.removeCallbacksAndMessages(null);
             if (streetEt.getText().toString().length() > 0 && postalCodeEt.getText().toString()
@@ -93,31 +115,64 @@ public class MainActivity extends Activity {
 
                     @Override
                     public void run() {
+                        runOnUiThread(new ShowProgressRunnable());
                         // Background thread
                         Log.d(TAG, "Suggestion Called");
-                        final List<Address> listAddresses = mPlaceAPI.autocomplete(streetEt.getText()
-                                        .toString(),
+                        final List<Address> listAddresses = mPlaceAPI.autocomplete(streetEt
+                                        .getText().toString(),
                                 postalCodeEt.getText().toString(), countryEt.getText().toString());
-                        if (listAddresses != null && listAddresses.size() > 0) {
+                        if (listAddresses != null && listAddresses.size() == 1) {
                             PlacesDetailAPI placeDetail = new PlacesDetailAPI();
-                            final Address address = placeDetail.autocomplete(listAddresses.get(0).placesId);
-                            runOnUiThread(new Runnable() {
-
-                                @Override
-                                public void run() {
-
-                                    displayAddress(address);
-                                }
-                            });
+                            final Address address = placeDetail.autocomplete(listAddresses.get(0)
+                                    .placesId);
+                            runOnUiThread(new SetAddressRunnable(address));
+                        } else {
+                            runOnUiThread(new ResetUiRunnable());
                         }
                     }
                 }, 1000);
+            } else {
+                resetUi();
             }
         }
 
         @Override
         public void afterTextChanged(Editable editable) {
 
+        }
+    }
+
+    class SetAddressRunnable implements Runnable {
+
+        private Address address;
+
+        public SetAddressRunnable(Address address) {
+
+            this.address = address;
+        }
+
+        @Override
+        public void run() {
+
+            displayAddress(address);
+        }
+    }
+
+    class ResetUiRunnable implements Runnable {
+
+        @Override
+        public void run() {
+
+            resetUi();
+        }
+    }
+
+    class ShowProgressRunnable implements Runnable {
+
+        @Override
+        public void run() {
+
+            progressBar.setVisibility(View.VISIBLE);
         }
     }
 }

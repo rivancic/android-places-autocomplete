@@ -1,4 +1,4 @@
-package com.developerhouse.googleplaces;
+package com.rivancic.googleplaces;
 
 import android.util.Log;
 
@@ -17,13 +17,13 @@ import java.util.ArrayList;
 /**
  * Providing known location data and wanting to get the city and province.
  */
-public class PlaceAPI {
+public class PlacesAutocompleteAPI {
 
     private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
     private static final String API_KEY = "AIzaSyCSvftaXQfxoM3BJdqCqlTSh4yMGHvZzLo";
-    private final String TAG = PlaceAPI.class.getSimpleName();
+    private final String TAG = PlacesAutocompleteAPI.class.getSimpleName();
 
     /**
      * Providing Street, Postal, Code and Country
